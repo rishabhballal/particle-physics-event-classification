@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import seaborn as sns
 from sklearn.model_selection import train_test_split
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler
@@ -9,7 +10,7 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn import metrics
 
-def classifier(clf, X_train, X_test, y_train, y_test, w_train, w_test):
+def classifier(clf, X_train, X_test, y_train, y_test):
     clf.fit(X_train, y_train)
     y_pred = clf.predict(X_test)
     print('Confusion matrix:\n', metrics.confusion_matrix(y_test, y_pred))
@@ -17,17 +18,22 @@ def classifier(clf, X_train, X_test, y_train, y_test, w_train, w_test):
 
     y_proba = clf.predict_proba(X_test)
     print('ROC AUC score:', metrics.roc_auc_score(y_test, y_proba[:, 1]))
-    fpr, tpr, thresh = metrics.roc_curve(y_test, y_proba[:, 1], pos_label='s')
-    fig, ax = plt.figure()
-    ax.plot(range(2), range(2))
-    ax.plot(fpr, tpr)
-    ax.title('ROC curve')
-    ax.set_xlabel('False Positive Rate')
-    ax.set_ylabel('True Positive Rate')
-    ax.grid()
+    fpr, tpr, threshold = metrics.roc_curve(
+        y_test, y_proba[:, 1], pos_label='s'
+    )
+    ax = sns.lineplot(x=fpr, y=tpr, color='orange')
+    ax.plot(range(2), range(2), 'b')
+    ax.set(
+        title='ROC Curve',
+        xlabel='False Positive Rate',
+        ylabel='True Positive Rate'
+    )
     plt.show()
 
 if __name__ == '__main__':
+    sns.set_theme()
+
+    # read data
     df = pd.read_csv('particle_physics_data.csv')
 
     # identifying NaNs
