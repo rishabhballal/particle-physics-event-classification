@@ -68,17 +68,14 @@ if __name__ == '__main__':
 
     model = Model(X_train_sel, X_test_sel, y_train, y_test, pos_label='s')
 
-    model.train_and_test(
-        KNeighborsClassifier(n_neighbors=133, p=1),
-        threshold=0.5,
-        plot_roc_curve=False)
+    knn = model.tune_parameters(
+        estimator=KNeighborsClassifier(p=1),
+        params={
+            'n_neighbors': [115, 125, 135, 145]
+        },
+        scoring='roc_auc',
+        grid=True,
+        seed=13
+    )
 
-    # model.tune_parameters(
-    #     estimator=KNeighborsClassifier(p=1),
-    #     params={
-    #         'n_neighbors': [137, 135, 133]
-    #     },
-    #     scoring='roc_auc',
-    #     grid=True,
-    #     seed=13
-    # )
+    model.train_and_test(knn, threshold=0.5)
