@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.model_selection import train_test_split
 from sklearn.impute import SimpleImputer
@@ -19,7 +18,7 @@ if __name__ == '__main__':
 
     # DATA PREPROCESSING
 
-    df = pd.read_csv('particle_physics_data.csv')
+    df = pd.read_csv('data.csv')
     df = df.replace(-999, np.nan)
 
     X = df.drop(columns=['EventId', 'Weight', 'Label'])
@@ -39,18 +38,47 @@ if __name__ == '__main__':
 
     # FEATURE SELECTION
 
-    feat_by_median = analysis.select_feat_by_median(X_train_imp, y_train)
-    feat_by_corr = analysis.select_feat_by_correlation(X_train_imp, y_train)
+    y_train_binary = y_train.map(lambda x: 1 if x == 's' else 0)
 
-    feat = list(set(pd.concat([feat_by_median, feat_by_corr]).index))
-    print('\nFeatures selected by median differences and target correlation')
+    feat_median_diffs = analysis.median_differences(
+        X_train_scal, y_train_binary, plot_top_n=10, left_adjust=0.32
+    )
+    feat_target_corr = analysis.feature_target_correlation(
+        X_train_scal, y_train_binary, plot_top_n=10, left_adjust=0.32
+    )
+    feat_feat_corr = analysis.feature_feature_correlation(
+        X_train_scal, plot_top_n=15, adjust=0.25
+    )
+    feat_corr = analysis.drop_highly_intercorrelated(
+        feat_target_corr, feat_feat_corr, threshold=0.75
+    )
+
+    feat_by_median = feat_median_diffs.iloc[:10].index
+    feat_by_corr = feat_corr[feat_corr > 0.15].index
+
+    feat = feat_by_median.union(feat_by_corr).to_list()
+    print('\nFeatures selected for the ML model')
     print(pd.Series(feat))
 
-    X_train_scal_ = X_train_scal[feat]
-    X_test_scal_ = X_test_scal[feat]
+    X_train_sel = X_train_scal[feat]
+    X_test_sel = X_test_scal[feat]
 
 
     # MODEL TRAINING AND TESTING
 
-    model = Model(X_train_scal_, X_test_scal_, y_train, y_test)
-    model.train_and_test(KNeighborsClassifier(n_neighbors=13, p=1))
+    model = Model(X_train_sel, X_test_sel, y_train, y_test, pos_label='s')
+
+    model.train_and_test(
+        KNeighborsClassifier(n_neighbors=133, p=1),
+        threshold=0.5,
+        plot_roc_curve=False)
+
+    # model.tune_parameters(
+    #     estimator=KNeighborsClassifier(p=1),
+    #     params={
+    #         'n_neighbors': [137, 135, 133]
+    #     },
+    #     scoring='roc_auc',
+    #     grid=True,
+    #     seed=13
+    # )
