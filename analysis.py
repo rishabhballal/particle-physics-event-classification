@@ -21,11 +21,8 @@ def _series_barplot(series, title, diverging=False, left_adjust=0):
 
     plt.figure(figsize=(8, 6))
     ax = sns.barplot(
-        x=series.values,
-        y=series.index,
-        hue=series.values,
-        palette=palette,
-        legend=False
+        x=series.values, y=series.index,
+        hue=series.values, palette=palette, legend=False
     )
 
     ax.set(title=title, xlabel=None, ylabel=None)
@@ -51,7 +48,7 @@ def mean_differences(X_train, y_train, plot_top_n=0, left_adjust=0):
     return feat_mean_diffs
 
 
-def median_differences(X_train, y_train, plot_top_n=0, left_adjust=0):
+def median_differences(X_train, y_train, plot_top_n=10, left_adjust=0):
     median_0 = X_train[y_train == 0].median()
     median_1 = X_train[y_train == 1].median()
     feat_median_diffs = (median_1 - median_0).abs().sort_values(ascending=False)
@@ -66,7 +63,7 @@ def median_differences(X_train, y_train, plot_top_n=0, left_adjust=0):
     return feat_median_diffs
 
 
-def feature_target_correlation(X_train, y_train, plot_top_n=0, left_adjust=0):
+def feature_target_correlation(X_train, y_train, plot_top_n=10, left_adjust=0):
     feat_target_corr = X_train.agg(y_train.corr).sort_values(
         ascending=False,
         key=lambda x: x.abs()
@@ -83,7 +80,7 @@ def feature_target_correlation(X_train, y_train, plot_top_n=0, left_adjust=0):
     return feat_target_corr
 
 
-def feature_feature_correlation(X_train, plot_top_n=0, adjust=0):
+def feature_feature_correlation(X_train, plot_top_n=15, adjust=0):
     corr_matrix = X_train.corr()
 
     feat_feat_corr = corr_matrix.stack().reset_index()
@@ -103,16 +100,14 @@ def feature_feature_correlation(X_train, plot_top_n=0, adjust=0):
         plt.figure(figsize=(9, 7))
         ax = sns.heatmap(
             high_corr_matrix,
-            vmin=-1,
-            vmax=1,
-            cmap='RdBu',
-            center=0
+            vmin=-1, vmax=1, center=0,
+            cmap='RdBu'
         )
 
         ax.set(
             title=f'Top {plot_top_n} feature-feature correlations',
-            xlabel=None,
-            ylabel=None)
+            xlabel=None, ylabel=None
+        )
         if adjust:
             plt.subplots_adjust(left=adjust, bottom=adjust)
 
