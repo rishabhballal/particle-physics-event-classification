@@ -2,7 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.model_selection import (GridSearchCV, RandomizedSearchCV,
-    StratifiedKFold)
+    StratifiedKFold, train_test_split)
 from sklearn import metrics
 
 
@@ -17,23 +17,21 @@ class Model:
         self.neg_label = y_train[y_train != pos_label].iat[0]
 
 
-    def tune_parameters(self, estimator, params, scoring, grid=False, seed=0):
+    def tune_parameters(self, estimator, params, scoring, seed=0):
         if seed:
-            kf = StratifiedKFold(n_splits=5, shuffle=True, random_state=seed)
+            kf = StratifiedKFold(n_splits=4, shuffle=True, random_state=seed)
         else:
-            kf = StratifiedKFold(n_splits=5, shuffle=True)
+            kf = StratifiedKFold(n_splits=4, shuffle=True)
 
-        if grid:
-            cv = GridSearchCV(estimator, params, scoring=scoring, cv=kf)
-        else:
-            cv = RandomizedSearchCV(estimator, params, scoring=scoring, cv=kf)
-
+        cv = GridSearchCV(
+            estimator, params, scoring=scoring, refit=False, cv=kf, verbose=3
+        )
         cv.fit(self.X_train, self.y_train)
 
         print(f'\n{'Best parameters':<20} {cv.best_params_}')
         print(f'\n{'Best score':<20} {cv.best_score_}')
 
-        return cv.best_estimator_
+        return cv.best_params_
 
 
     def confusion_matrix(self, y_pred):
@@ -46,11 +44,9 @@ class Model:
         plt.figure(figsize=(8, 6))
         ax = sns.heatmap(
             matrix,
-            vmin=0,
-            vmax=len(self.y_test),
+            vmin=0, vmax=len(self.y_test),
             cmap='Blues',
-            annot=True,
-            fmt='d'
+            annot=True, fmt='d'
         )
         ax.set_title('Confusion matrix')
 
@@ -72,21 +68,14 @@ class Model:
         report_df.columns = ['Metric', 'Label', 'Score']
 
         plt.figure(figsize=(8, 6))
-        ax = sns.barplot(
-            report_df,
-            x='Metric',
-            y='Score',
-            hue='Label'
-        )
+        ax = sns.barplot(report_df, x='Metric', y='Score', hue='Label')
 
         xlabels = [x.get_text()[0].upper() + x.get_text()[1:]
             for x in ax.get_xticklabels()]
         ax.set(
             title='Classification report',
-            xlabel=None,
-            ylabel=None,
-            xticks=[0, 1, 2],
-            xticklabels=xlabels,
+            xlabel=None, ylabel=None,
+            xticks=[0, 1, 2], xticklabels=xlabels,
             yticks=[0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
         )
 
@@ -122,10 +111,8 @@ class Model:
         curve = list(ax.get_lines())[0].get_xydata().T
         ax.fill_between(
             x=curve[0],
-            y1=0,
-            y2=curve[1],
-            color='C0',
-            alpha=0.4
+            y1=0, y2=curve[1],
+            color='C0', alpha=0.4
         )
 
         plt.savefig('vis/ROC_curve.png')
