@@ -1,6 +1,6 @@
 # Particle physics event classification
 
-This is a supervised machine learning model for a [particle physics event classification dataset](https://www.kaggle.com/datasets/younusmohamed/particle-physics-event-classification-dataset?select=README.md).
+This is a supervised machine learning model for a [particle physics event classification dataset](https://www.kaggle.com/datasets/younusmohamed/particle-physics-event-classification-dataset).
 
 
 ## Preprocessing the data
