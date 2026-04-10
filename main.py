@@ -5,9 +5,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.linear_model import LogisticRegression
-
 import analysis
 from model import Model
 
@@ -81,4 +78,4 @@ if __name__ == '__main__':
     )
     estimator = estimator.set_params(**best_params)
 
-    model.train_and_test(estimator, threshold=0.5)
+    model.train_and_test(estimator)

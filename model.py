@@ -1,8 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-from sklearn.model_selection import (GridSearchCV, RandomizedSearchCV,
-    StratifiedKFold, train_test_split)
+from sklearn.model_selection import GridSearchCV, StratifiedKFold
 from sklearn import metrics
 
 
